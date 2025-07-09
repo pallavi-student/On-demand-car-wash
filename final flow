@@ -1,0 +1,60 @@
+Complete Flow (Normal One-Liner Points)
+User Registration / Login
+
+Customer logs in or registers → JWT token is issued for secure communication.
+
+Add Car
+
+Customer adds car details → Car gets saved to the database.
+
+Book Wash
+
+Customer books a wash request → Order status becomes PENDING.
+
+📤 Event sent to RabbitMQ: order.created
+
+Auto Washer Assignment
+
+Cron job runs periodically → Assigns available washer to PENDING orders.
+
+Order status becomes ASSIGNED.
+
+📤 Event sent: order.assigned
+
+Washer Accepts or Rejects Order
+
+Washer accepts → Order status becomes ACCEPTED.
+📤 Event sent: washer.accepted
+
+Washer rejects → Order stays PENDING.
+📤 Event sent: washer.rejected
+
+Invoice Generation by Washer
+
+Washer generates invoice for the order.
+
+Invoice details and payment info saved.
+
+📤 Event sent: washer.invoice_generated
+
+Payment Processing by Customer (Stripe)
+
+Customer clicks "Pay" → Stripe PaymentIntent is created.
+
+Payment status set as PENDING.
+
+📤 Event sent: payment.processed
+
+Payment Confirmation (Stripe)
+
+Stripe confirms payment → Status updated to SUCCESS or FAILED.
+
+If successful, Order status becomes COMPLETED.
+
+📤 Event sent: payment.confirmed or payment.failed
+
+Notification Logging (RabbitMQ Listener)
+
+NotificationService listens to events via notifications.queue.
+
+Console logs show proper messages for each event (e.g., order assigned, payment confirmed, etc.).
