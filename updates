@@ -1,0 +1,224 @@
+On-Demand Car Wash system is a role-based, microservices-driven, secure, and scalable solution built using Spring Boot, Spring Security, JWT, RabbitMQ, Stripe Payment Gateway, and Eureka with API Gateway. It enables users to:
+
+Register and login
+
+Add cars
+
+Book wash (immediate or scheduled)
+
+Get washer assigned automatically
+
+Process payment securely
+
+Receive notifications
+
+🧱 Tech Stack
+Layer	Technology
+Backend Framework	Spring Boot (RESTful APIs)
+Security	Spring Security + JWT
+Role Handling	Enum Roles (ADMIN, CUSTOMER, WASHER)
+Gateway	Spring Cloud Gateway
+Service Discovery	Eureka Server
+Communication	RabbitMQ (Event-based)
+Payments	Stripe API
+Build Tool	Maven
+Database	MySQL / H2 (based on config)
+ORM	Spring Data JPA
+Test	Mockito / JUnit
+
+📊 Microservices Overview
+1. User Service
+Handles all user-related operations, registration, login, and profile management.
+
+➤ Endpoints:
+Endpoint	Description
+/signUp	Register CUSTOMER / WASHER
+/admin/signUp	Register ADMIN
+/login	JWT-based login
+/profile	Get logged-in user details
+/update/profile	Update profile
+/washers	Get all washers (used in booking)
+
+➤ Key Highlights:
+Passwords are securely stored using BCryptPasswordEncoder.
+
+Role-based redirection (CUSTOMER, WASHER, ADMIN).
+
+Admin can only be registered by an existing Admin.
+
+JWT tokens are generated using JwtUtil.
+
+Washers and customers are stored in their respective sub-entities.
+
+2. Car Service
+Lets customers register and manage their cars.
+
+➤ Endpoints:
+Endpoint	Description
+/add	Add a new car (CUSTOMER only)
+/{id}	Fetch specific car
+/all/{id}	List all cars by customer ID
+/{id} (PUT)	Update car
+
+➤ Highlights:
+Cars are linked to Customer entity by email.
+
+Role verification is enforced using @PreAuthorize.
+
+3. Booking (Order) Service
+Core booking logic and automatic washer assignment.
+
+➤ Endpoints:
+Endpoint	Description
+/wash-now	Book an instant wash
+/schdule/wash	Schedule a future wash
+/pending	Admin: See all pending bookings
+/current	Fetch current orders (CUSTOMER/WASHER/ADMIN)
+/past	Get history of completed/canceled orders
+/{id}	Get booking by ID
+/{id} (PUT)	Update booking status
+
+➤ Highlights:
+Order is created with status PENDING.
+
+After creation, an event is published to RabbitMQ: order.created.
+
+Washer assignment is automatic using a scheduled job every 30 seconds.
+
+Order is updated to ASSIGNED, and event order.assigned is published.
+
+4. Washer Service
+Washer actions and invoice creation.
+
+➤ Endpoints:
+Endpoint	Description
+/request	Get current wash requests
+/accept/{orderId}	Accept assigned wash
+/decline/{orderId}	Decline assigned wash
+/invoice	Generate invoice and start payment
+
+➤ Highlights:
+Washer can only accept assigned orders.
+
+Generates invoice only if order is ACCEPTED.
+
+Publishes events: washer.accepted, washer.invoice_generated, etc.
+
+Communicates with Payment Service via Feign Client.
+
+5. Payment Service (Stripe Integration)
+➤ Endpoints:
+Endpoint	Description
+/process	Initiates Stripe payment (returns clientSecret)
+/confirm/{paymentId}	Confirms payment after success
+
+➤ Flow:
+Washer requests payment with amount, orderId.
+
+Stripe PaymentIntent is created → returns clientSecret.
+
+If successful, updates Payment entity and sets order to COMPLETED.
+
+Publishes RabbitMQ events: payment.processed, payment.confirmed, payment.failed.
+
+6. Notification Service (RabbitMQ Listener)
+Listens to RabbitMQ queue notifications.queue and logs real-time system updates.
+
+➤ Events Handled:
+order.created
+
+order.assigned
+
+order.updated
+
+washer.accepted
+
+washer.rejected
+
+washer.invoice_generated
+
+payment.processed
+
+payment.confirmed
+
+payment.failed
+
+👉 Uses @RabbitListener and prints structured logs to simulate push notifications.
+
+🌐 API Gateway + Eureka Flow
+API Gateway is the entry point for all requests (localhost:8080/**).
+
+All microservices register themselves with Eureka Server.
+
+API Gateway uses Eureka service names to forward requests.
+
+Example Routing:
+
+pgsql
+Copy
+Edit
+/user-service/signUp → forwards to User Service
+/car-service/add → forwards to Car Service
+/booking-service/wash-now → Booking Service
+🔐 Security & Authorization
+JWT Token used for secure authentication.
+
+Spring Security restricts access based on role (CUSTOMER, WASHER, ADMIN).
+
+Secured endpoints use @PreAuthorize(...) annotations.
+
+JWT is generated during login and attached in Authorization Header.
+
+🧪 Mockito & Testing
+Unit testing supported via Mockito and JUnit.
+
+Services are mocked and behavior-driven tests ensure reliability.
+
+AOP Logging can be added to track service methods and exceptions.
+
+🔁 Event-Driven Architecture with RabbitMQ
+Event Type	Published From	Consumed In
+order.created	OrderService	NotificationService
+order.assigned	Scheduler in OrderService	NotificationService
+washer.accepted	WasherService	NotificationService
+payment.processed	PaymentService	NotificationService
+payment.confirmed	PaymentService	NotificationService
+washer.invoice_generated	WasherService	NotificationService
+
+✅ Uses consistent eventType in headers and JSON message body.
+✅ All events routed through carwash.events exchange.
+
+⭐ Unique & Advanced Features
+✅ Automatic Washer Assignment (randomly every 30 sec).
+
+✅ Stripe Secure Payment with clientSecret flow.
+
+✅ RabbitMQ Real-Time Notifications.
+
+✅ Feign Clients for inter-service communication.
+
+✅ Role-based Access Control across all endpoints.
+
+✅ JWT + Spring Security protection.
+
+✅ Swagger API Docs for each service (with @Operation annotations).
+
+✅ Scheduled Tasks for booking management.
+
+✅ Separation of Concerns: Clean layered architecture.
+
+📌 Conclusion
+Your On-Demand Car Wash backend is a fully microservice-based, secure, and event-driven application. It smartly handles users, cars, bookings, payments, and notifications using modern backend practices:
+
+Microservices communication via Feign Clients
+
+Gateway routing and service discovery with Eureka
+
+Real-time flow and decoupling using RabbitMQ
+
+Enterprise-grade security with Spring Security + JWT
+
+Dynamic payment integration using Stripe
+
+You’ve implemented clean code structure, smart automation, real-time workflows, and scalability, making this project production-grade and ready for demo or deployment.
+
