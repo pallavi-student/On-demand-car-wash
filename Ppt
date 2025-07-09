@@ -1,0 +1,1160 @@
+🚗 On-Demand Car Wash Backend – Technical Documentation
+
+📘 Overview
+
+This Spring Boot-based microservices backend powers an On-Demand Car Wash Application. It manages:
+
+User registration/login with secure role-based authentication
+
+Car addition and update
+
+Scheduling and managing car wash bookings
+
+Washer assignment, invoice generation, and payment processing
+
+Admin dashboard for monitoring the system
+
+
+Built using:
+
+✅ Spring Boot Microservices
+
+✅ Spring Security with JWT
+
+✅ Eureka Service Discovery
+
+✅ API Gateway (Spring Cloud Gateway)
+
+✅ RabbitMQ Events
+
+✅ Swagger API Docs
+
+✅ JUnit & Mockito Testing
+
+✅ AOP for logging
+
+
+
+---
+
+👥 Actors in the System
+
+Actor	Capabilities
+
+Customer	Sign up, add car(s), book immediate or scheduled wash, view orders & status
+Washer	Accept/decline wash requests, view assigned orders, generate invoice, process payments
+Admin	View all orders (pending, current, past), view registered washers, assign washers
+
+
+
+---
+
+🧱 Architecture Diagram (Logical)
+
+[ API Gateway ]
+       |
+  -------------------------------
+  |       |        |      |     |
+[User] [Booking] [Washer][Car][Payment]
+       |
+    [RabbitMQ]
+
+Services: user-service, booking-service, washer-service, car-service, payment-service
+
+Authenticated via API Gateway using JWT
+
+Inter-service communication is REST (secured with JWT headers)
+
+Washer assignment and invoice/payment processed via RabbitMQ + Feign
+
+
+
+---
+
+🔐 Spring Security & JWT
+
+✅ User Roles:
+
+CUSTOMER
+
+WASHER
+
+ADMIN
+
+
+✅ Token Generation:
+
+Token is issued after successful login or signup via JwtUtil.generateToken(email, role)
+
+Each request carries token in header: Authorization: Bearer <token>
+
+
+✅ Token Validation:
+
+JWT is validated in every request using a filter.
+
+Role-based access using @PreAuthorize.
+
+
+✅ Protected Endpoints Example:
+
+@PreAuthorize("hasAuthority('CUSTOMER')")
+@PostMapping("/wash-now")
+public OrderResponse bookWashNow(...) { ... }
+
+
+---
+
+🔁 API Gateway
+
+All requests go through API Gateway (Spring Cloud Gateway)
+
+Configured with CORS, routing, and JWT header forwarding
+
+Eureka-based dynamic service discovery
+
+
+
+---
+
+🪝 AOP (Logging)
+
+Implemented custom Aspect Logging for methods in UserService, e.g.:
+
+@Aspect
+@Component
+public class UserServiceLoggingAspect {
+
+  @Before("execution(* com..UserService.*(..))")
+  public void logBefore(JoinPoint joinPoint) {
+    // Logs method name and args
+  }
+
+  @AfterReturning(...)
+  public void logAfter(...) {
+    // Logs result of method
+  }
+}
+
+Helps in debugging and monitoring method behavior.
+
+
+---
+
+🛠️ Swagger + Security
+
+Swagger UI enabled at /swagger-ui/index.html
+
+Token-based authentication supported
+
+Secured endpoints are documented with role restrictions
+
+
+
+---
+
+📦 Core Modules Overview
+
+1. user-service
+
+Registration/Login via /api/users
+
+Role-based creation (admin/customer/washer)
+
+JWT Token generation
+
+Profile update endpoint
+
+
+2. booking-service
+
+Book Now and Schedule Wash
+
+Get Orders: /pending, /current, /past
+
+Role-based filtering (customer/washer/admin)
+
+Each booking stores user and car info securely
+
+
+3. washer-service
+
+View wash requests assigned to washer
+
+Accept or decline requests
+
+Generate invoice using /invoice
+
+Integrates with payment-service via Feign
+
+
+4. car-service
+
+Customer adds/updates their cars
+
+Each car is tied to the logged-in customer's email
+
+
+5. payment-service
+
+Process payment using invoice info
+
+Confirm payment with payment ID
+
+Verifies washer role before allowing transactions
+
+
+
+---
+
+📬 RabbitMQ Integration (Optional)
+
+Notifications (such as booking status change or invoice generated) are published to RabbitMQ
+
+Future scope: Can be used to send email/SMS or push notification
+
+
+
+---
+
+✅ Mockito + JUnit Testing
+
+Service layer tested with Mockito
+
+Controller integration with MockMvc
+
+Custom exceptions handled gracefully
+
+Test examples:
+
+
+@Test
+void testLoginUser_whenValid_shouldReturnToken() {
+    // Mock repo & service
+    // Assert correct LoginResponseDto returned
+}
+
+
+---
+
+🔍 Unique Features to Highlight
+
+Feature	Description
+
+🛡️ Secure Endpoints	JWT + Role-based access
+🪝 AOP Logging	Transparent logging of service methods
+📦 Clean DTOs	DTOs separate from entities for clean request/response
+🔁 Feign Clients	Inter-service communication for invoice/payment
+📦 Modular Design	Proper separation of microservices
+🧼 Washer Assignment	Only available to washers, enforced by role
+📑 Swagger UI with JWT	Token-secured Swagger for all APIs
+✅ CORS Configured	Frontend integration ready with CORS rules
+🧪 Test Coverage	Mockito-based unit tests for services
+
+
+
+---
+
+⚛️ React Frontend (Overview Only)
+
+Built using React + Vite + Material UI
+
+Role-based dashboards: Customer, Washer, Admin
+
+Axios used with JWT header
+
+Protected routes via role detection
+
+Login and Sign Up are on a single page using <Tabs />
+
+
+(Frontend is currently in progress and not part of this delivery.)
+
+
+---
+
+✅ Conclusion
+
+This On-Demand Car Wash project is a complete production-style backend setup with:
+
+✅ Microservices architecture
+
+✅ Role-based access with JWT
+
+✅ Admin, Washer, Customer workflows
+
+✅ Unit-tested services
+
+✅ Swagger documentation
+
+✅ Clean modular design
+🚗 On-Demand Car Wash Backend – Technical Documentation
+
+📘 Overview
+
+This Spring Boot-based microservices backend powers an On-Demand Car Wash Application. It manages:
+
+User registration/login with secure role-based authentication
+
+Car addition and update
+
+Scheduling and managing car wash bookings
+
+Washer assignment, invoice generation, and payment processing
+
+Admin dashboard for monitoring the system
+
+
+Built using:
+
+✅ Spring Boot Microservices
+
+✅ Spring Security with JWT
+
+✅ Eureka Service Discovery
+
+✅ API Gateway (Spring Cloud Gateway)
+
+✅ RabbitMQ Events
+
+✅ Swagger API Docs
+
+✅ JUnit & Mockito Testing
+
+✅ AOP for logging
+
+
+
+---
+
+👥 Actors in the System
+
+Actor	Capabilities
+
+Customer	Sign up, add car(s), book immediate or scheduled wash, view orders & status
+Washer	Accept/decline wash requests, view assigned orders, generate invoice, process payments
+Admin	View all orders (pending, current, past), view registered washers, assign washers
+
+
+
+---
+
+🧱 Architecture Diagram (Logical)
+
+[ API Gateway ]
+       |
+  -------------------------------
+  |       |        |      |     |
+[User] [Booking] [Washer][Car][Payment]
+       |
+    [RabbitMQ]
+
+Services: user-service, booking-service, washer-service, car-service, payment-service
+
+Authenticated via API Gateway using JWT
+
+Inter-service communication is REST (secured with JWT headers)
+
+Washer assignment and invoice/payment processed via RabbitMQ + Feign
+
+
+
+---
+
+🔐 Spring Security & JWT
+
+✅ User Roles:
+
+CUSTOMER
+
+WASHER
+
+ADMIN
+
+
+✅ Token Generation:
+
+Token is issued after successful login or signup via JwtUtil.generateToken(email, role)
+
+Each request carries token in header: Authorization: Bearer <token>
+
+
+✅ Token Validation:
+
+JWT is validated in every request using a filter.
+
+Role-based access using @PreAuthorize.
+
+
+✅ Protected Endpoints Example:
+
+@PreAuthorize("hasAuthority('CUSTOMER')")
+@PostMapping("/wash-now")
+public OrderResponse bookWashNow(...) { ... }
+
+
+---
+
+🔁 API Gateway
+
+All requests go through API Gateway (Spring Cloud Gateway)
+
+Configured with CORS, routing, and JWT header forwarding
+
+Eureka-based dynamic service discovery
+
+
+
+---
+
+🪝 AOP (Logging)
+
+Implemented custom Aspect Logging for methods in UserService, e.g.:
+
+@Aspect
+@Component
+public class UserServiceLoggingAspect {
+
+  @Before("execution(* com..UserService.*(..))")
+  public void logBefore(JoinPoint joinPoint) {
+    // Logs method name and args
+  }
+
+  @AfterReturning(...)
+  public void logAfter(...) {
+    // Logs result of method
+  }
+}
+
+Helps in debugging and monitoring method behavior.
+
+
+---
+
+🛠️ Swagger + Security
+
+Swagger UI enabled at /swagger-ui/index.html
+
+Token-based authentication supported
+
+Secured endpoints are documented with role restrictions
+
+
+
+---
+
+📦 Core Modules Overview
+
+1. user-service
+
+Registration/Login via /api/users
+
+Role-based creation (admin/customer/washer)
+
+JWT Token generation
+
+Profile update endpoint
+
+
+2. booking-service
+
+Book Now and Schedule Wash
+
+Get Orders: /pending, /current, /past
+
+Role-based filtering (customer/washer/admin)
+
+Each booking stores user and car info securely
+
+
+3. washer-service
+
+View wash requests assigned to washer
+
+Accept or decline requests
+
+Generate invoice using /invoice
+
+Integrates with payment-service via Feign
+
+
+4. car-service
+
+Customer adds/updates their cars
+
+Each car is tied to the logged-in customer's email
+
+
+5. payment-service
+
+Process payment using invoice info
+
+Confirm payment with payment ID
+
+Verifies washer role before allowing transactions
+
+
+
+---
+
+📬 RabbitMQ Integration (Optional)
+
+Notifications (such as booking status change or invoice generated) are published to RabbitMQ
+
+Future scope: Can be used to send email/SMS or push notification
+
+
+
+---
+
+✅ Mockito + JUnit Testing
+
+Service layer tested with Mockito
+
+Controller integration with MockMvc
+
+Custom exceptions handled gracefully
+
+Test examples:
+
+
+@Test
+void testLoginUser_whenValid_shouldReturnToken() {
+    // Mock repo & service
+    // Assert correct LoginResponseDto returned
+}
+
+
+---
+
+🔍 Unique Features to Highlight
+
+Feature	Description
+
+🛡️ Secure Endpoints	JWT + Role-based access
+🪝 AOP Logging	Transparent logging of service methods
+📦 Clean DTOs	DTOs separate from entities for clean request/response
+🔁 Feign Clients	Inter-service communication for invoice/payment
+📦 Modular Design	Proper separation of microservices
+🧼 Washer Assignment	Only available to washers, enforced by role
+📑 Swagger UI with JWT	Token-secured Swagger for all APIs
+✅ CORS Configured	Frontend integration ready with CORS rules
+🧪 Test Coverage	Mockito-based unit tests for services
+
+
+
+---
+
+⚛️ React Frontend (Overview Only)
+
+Built using React + Vite + Material UI
+
+Role-based dashboards: Customer, Washer, Admin
+
+Axios used with JWT header
+
+Protected routes via role detection
+
+Login and Sign Up are on a single page using <Tabs />
+
+
+(Frontend is currently in progress and not part of this delivery.)
+
+
+---
+
+✅ Conclusion
+
+This On-Demand Car Wash project is a complete production-style backend setup with:
+
+✅ Microservices architecture
+
+✅ 🚗 On-Demand Car Wash Backend – Technical Documentation
+
+📘 Overview
+
+This Spring Boot-based microservices backend powers an On-Demand Car Wash Application. It manages:
+
+User registration/login with secure role-based authentication
+
+Car addition and update
+
+Scheduling and managing car wash bookings
+
+Washer assignment, invoice generation, and payment processing
+
+Admin dashboard for monitoring the system
+
+
+Built using:
+
+✅ Spring Boot Microservices
+
+✅ Spring Security with JWT
+
+✅ Eureka Service Discovery
+
+✅ API Gateway (Spring Cloud Gateway)
+
+✅ RabbitMQ Events
+
+✅ Swagger API Docs
+
+✅ JUnit & Mockito Testing
+
+✅ AOP for logging
+
+
+
+---
+
+👥 Actors in the System
+
+Actor	Capabilities
+
+Customer	Sign up, add car(s), book immediate or scheduled wash, view orders & status
+Washer	Accept/decline wash requests, view assigned orders, generate invoice, process payments
+Admin	View all orders (pending, current, past), view registered washers, assign washers
+
+
+
+---
+
+🧱 Architecture Diagram (Logical)
+
+[ API Gateway ]
+       |
+  -------------------------------
+  |       |        |      |     |
+[User] [Booking] [Washer][Car][Payment]
+       |
+    [RabbitMQ]
+
+Services: user-service, booking-service, washer-service, car-service, payment-service
+
+Authenticated via API Gateway using JWT
+
+Inter-service communication is REST (secured with JWT headers)
+
+Washer assignment and invoice/payment processed via RabbitMQ + Feign
+
+
+
+---
+
+🔐 Spring Security & JWT
+
+✅ User Roles:
+
+CUSTOMER
+
+WASHER
+
+ADMIN
+
+
+✅ Token Generation:
+
+Token is issued after successful login or signup via JwtUtil.generateToken(email, role)
+
+Each request carries token in header: Authorization: Bearer <token>
+
+
+✅ Token Validation:
+
+JWT is validated in every request using a filter.
+
+Role-based access using @PreAuthorize.
+
+
+✅ Protected Endpoints Example:
+
+@PreAuthorize("hasAuthority('CUSTOMER')")
+@PostMapping("/wash-now")
+public OrderResponse bookWashNow(...) { ... }
+
+
+---
+
+🔁 API Gateway
+
+All requests go through API Gateway (Spring Cloud Gateway)
+
+Configured with CORS, routing, and JWT header forwarding
+
+Eureka-based dynamic service discovery
+
+
+
+---
+
+🪝 AOP (Logging)
+
+Implemented custom Aspect Logging for methods in UserService, e.g.:
+
+@Aspect
+@Component
+public class UserServiceLoggingAspect {
+
+  @Before("execution(* com..UserService.*(..))")
+  public void logBefore(JoinPoint joinPoint) {
+    // Logs method name and args
+  }
+
+  @AfterReturning(...)
+  public void logAfter(...) {
+    // Logs result of method
+  }
+}
+
+Helps in debugging and monitoring method behavior.
+
+
+---
+
+🛠️ Swagger + Security
+
+Swagger UI enabled at /swagger-ui/index.html
+
+Token-based authentication supported
+
+Secured endpoints are documented with role restrictions
+
+
+
+---
+
+📦 Core Modules Overview
+
+1. user-service
+
+Registration/Login via /api/users
+
+Role-based creation (admin/customer/washer)
+
+JWT Token generation
+
+Profile update endpoint
+
+
+2. booking-service
+
+Book Now and Schedule Wash
+
+Get Orders: /pending, /current, /past
+
+Role-based filtering (customer/washer/admin)
+
+Each booking stores user and car info securely
+
+
+3. washer-service
+
+View wash requests assigned to washer
+
+Accept or decline requests
+
+Generate invoice using /invoice
+
+Integrates with payment-service via Feign
+
+
+4. car-service
+
+Customer adds/updates their cars
+
+Each car is tied to the logged-in customer's email
+
+
+5. payment-service
+
+Process payment using invoice info
+
+Confirm payment with payment ID
+
+Verifies washer role before allowing transactions
+
+
+
+---
+
+📬 RabbitMQ Integration (Optional)
+
+Notifications (such as booking status change or invoice generated) are published to RabbitMQ
+
+Future scope: Can be used to send email/SMS or push notification
+
+
+
+---
+
+✅ Mockito + JUnit Testing
+
+Service layer tested with Mockito
+
+Controller integration with MockMvc
+
+Custom exceptions handled gracefully
+
+Test examples:
+
+
+@Test
+void testLoginUser_whenValid_shouldReturnToken() {
+    // Mock repo & service
+    // Assert correct LoginResponseDto returned
+}
+
+
+---
+
+🔍 Unique Features to Highlight
+
+Feature	Description
+
+🛡️ Secure Endpoints	JWT + Role-based access
+🪝 AOP Logging	Transparent logging of service methods
+📦 Clean DTOs	DTOs separate from entities for clean request/response
+🔁 Feign Clients	Inter-service communication for invoice/payment
+📦 Modular Design	Proper separation of microservices
+🧼 Washer Assignment	Only available to washers, enforced by role
+📑 Swagger UI with JWT	Token-secured Swagger for all APIs
+✅ CORS Configured	Frontend integration ready with CORS rules
+🧪 Test Coverage	Mockito-based unit tests for services
+
+
+
+---
+
+⚛️ React Frontend (Overview Only)
+
+Built using React + Vite + Material UI
+
+Role-based dashboards: Customer, Washer, Admin
+
+Axios used with JWT header
+
+Protected routes via role detection
+
+Login and Sign Up are on a single page using <Tabs />
+
+
+(Frontend is currently in progress and not part of this delivery.)
+
+
+---
+
+✅ Conclusion
+
+This On-Demand Car Wash project is a complete production-style backend setup with:
+
+✅ Microservices architecture
+
+✅ Role-based access with JWT
+
+✅ Admin, Washer, Customer workflows
+
+✅ Unit-tested services
+
+✅ Swagger documentation
+
+✅ Clean modular design
+🚗 On-Demand Car Wash Backend – Technical Documentation
+
+📘 Overview
+
+This Spring Boot-based microservices backend powers an On-Demand Car Wash Application. It manages:
+
+User registration/login with secure role-based authentication
+
+Car addition and update
+
+Scheduling and managing car wash bookings
+
+Washer assignment, invoice generation, and payment processing
+
+Admin dashboard for monitoring the system
+
+
+Built using:
+
+✅ Spring Boot Microservices
+
+✅ Spring Security with JWT
+
+✅ Eureka Service Discovery
+
+✅ API Gateway (Spring Cloud Gateway)
+
+✅ RabbitMQ Events
+
+✅ Swagger API Docs
+
+✅ JUnit & Mockito Testing
+
+✅ AOP for logging
+
+
+
+---
+
+👥 Actors in the System
+
+Actor	Capabilities
+
+Customer	Sign up, add car(s), book immediate or scheduled wash, view orders & status
+Washer	Accept/decline wash requests, view assigned orders, generate invoice, process payments
+Admin	View all orders (pending, current, past), view registered washers, assign washers
+
+
+
+---
+
+🧱 Architecture Diagram (Logical)
+
+[ API Gateway ]
+       |
+  -------------------------------
+  |       |        |      |     |
+[User] [Booking] [Washer][Car][Payment]
+       |
+    [RabbitMQ]
+
+Services: user-service, booking-service, washer-service, car-service, payment-service
+
+Authenticated via API Gateway using JWT
+
+Inter-service communication is REST (secured with JWT headers)
+
+Washer assignment and invoice/payment processed via RabbitMQ + Feign
+
+
+
+---
+
+🔐 Spring Security & JWT
+
+✅ User Roles:
+
+CUSTOMER
+
+WASHER
+
+ADMIN
+
+
+✅ Token Generation:
+
+Token is issued after successful login or signup via JwtUtil.generateToken(email, role)
+
+Each request carries token in header: Authorization: Bearer <token>
+
+
+✅ Token Validation:
+
+JWT is validated in every request using a filter.
+
+Role-based access using @PreAuthorize.
+
+
+✅ Protected Endpoints Example:
+
+@PreAuthorize("hasAuthority('CUSTOMER')")
+@PostMapping("/wash-now")
+public OrderResponse bookWashNow(...) { ... }
+
+
+---
+
+🔁 API Gateway
+
+All requests go through API Gateway (Spring Cloud Gateway)
+
+Configured with CORS, routing, and JWT header forwarding
+
+Eureka-based dynamic service discovery
+
+
+
+---
+
+🪝 AOP (Logging)
+
+Implemented custom Aspect Logging for methods in UserService, e.g.:
+
+@Aspect
+@Component
+public class UserServiceLoggingAspect {
+
+  @Before("execution(* com..UserService.*(..))")
+  public void logBefore(JoinPoint joinPoint) {
+    // Logs method name and args
+  }
+
+  @AfterReturning(...)
+  public void logAfter(...) {
+    // Logs result of method
+  }
+}
+
+Helps in debugging and monitoring method behavior.
+
+
+---
+
+🛠️ Swagger + Security
+
+Swagger UI enabled at /swagger-ui/index.html
+
+Token-based authentication supported
+
+Secured endpoints are documented with role restrictions
+
+
+
+---
+
+📦 Core Modules Overview
+
+1. user-service
+
+Registration/Login via /api/users
+
+Role-based creation (admin/customer/washer)
+
+JWT Token generation
+
+Profile update endpoint
+
+
+2. booking-service
+
+Book Now and Schedule Wash
+
+Get Orders: /pending, /current, /past
+
+Role-based filtering (customer/washer/admin)
+
+Each booking stores user and car info securely
+
+
+3. washer-service
+
+View wash requests assigned to washer
+
+Accept or decline requests
+
+Generate invoice using /invoice
+
+Integrates with payment-service via Feign
+
+
+4. car-service
+
+Customer adds/updates their cars
+
+Each car is tied to the logged-in customer's email
+
+
+5. payment-service
+
+Process payment using invoice info
+
+Confirm payment with payment ID
+
+Verifies washer role before allowing transactions
+
+
+
+---
+
+📬 RabbitMQ Integration (Optional)
+
+Notifications (such as booking status change or invoice generated) are published to RabbitMQ
+
+Future scope: Can be used to send email/SMS or push notification
+
+
+
+---
+
+✅ Mockito + JUnit Testing
+
+Service layer tested with Mockito
+
+Controller integration with MockMvc
+
+Custom exceptions handled gracefully
+
+Test examples:
+
+
+@Test
+void testLoginUser_whenValid_shouldReturnToken() {
+    // Mock repo & service
+    // Assert correct LoginResponseDto returned
+}
+
+
+---
+
+🔍 Unique Features to Highlight
+
+Feature	Description
+
+🛡️ Secure Endpoints	JWT + Role-based access
+🪝 AOP Logging	Transparent logging of service methods
+📦 Clean DTOs	DTOs separate from entities for clean request/response
+🔁 Feign Clients	Inter-service communication for invoice/payment
+📦 Modular Design	Proper separation of microservices
+🧼 Washer Assignment	Only available to washers, enforced by role
+📑 Swagger UI with JWT	Token-secured Swagger for all APIs
+✅ CORS Configured	Frontend integration ready with CORS rules
+🧪 Test Coverage	Mockito-based unit tests for services
+
+
+
+---
+
+⚛️ React Frontend (Overview Only)
+
+Built using React + Vite + Material UI
+
+Role-based dashboards: Customer, Washer, Admin
+
+Axios used with JWT header
+
+Protected routes via role detection
+
+Login and Sign Up are on a single page using <Tabs />
+
+
+(Frontend is currently in progress and not part of this delivery.)
+
+
+---
+
+✅ Conclusion
+
+This On-Demand Car Wash project is a complete production-style backend setup with:
+
+✅ Microservices architecture
+
+✅ Role-based access with JWT
+
+✅ Admin, Washer, Customer workflows
+
+✅ Unit-tested services
+
+✅ Swagger documentation
+
+✅ Clean modular design
+-based access with JWT
+
+✅ Admin, Washer, Customer workflows
+
+✅ Unit-tested services
+
+✅ Swagger documentation
+
+✅ Clean modular design
