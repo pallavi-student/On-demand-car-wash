@@ -1,0 +1,55 @@
+Security Flow (JWT + Roles)
+1. Login & Token Generation
+User sends email & password.
+
+If valid, backend generates a JWT token with:
+
+Email (as subject)
+
+Role (e.g., CUSTOMER, WASHER, ADMIN)
+
+2. Token Structure
+JWT contains:
+
+sub = user's email
+
+role = user's role
+
+exp = token expiry time
+
+3. Request Authorization
+Every secured request must have:
+
+http
+Copy
+Edit
+Authorization: Bearer <JWT>
+JWT Filter verifies token and loads user details.
+
+4. Role-Based Access
+Access is controlled using @PreAuthorize("hasAuthority('ROLE')") in every service.
+
+Example:
+
+CUSTOMER → Book car wash, pay
+
+WASHER → Accept orders, generate invoice
+
+ADMIN → View/manage all users
+
+5. SecurityContext
+Inside services, current user's email is extracted via:
+
+java
+Copy
+Edit
+String email = SecurityContextHolder.getContext().getAuthentication().getName();
+6. Unauthorized Access
+Invalid/missing token → 401 Unauthorized
+
+Valid token but wrong role → 403 Forbidden
+
+7. Microservices Auth
+Each service checks the JWT in the header.
+
+No token → request rejected.
