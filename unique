@@ -1,0 +1,18 @@
+⭐ Unique & Advanced Features
+✅ Automatic Washer Assignment (randomly every 30 sec).
+
+✅ Stripe Secure Payment with clientSecret flow.
+
+✅ RabbitMQ Real-Time Notifications.
+
+✅ Feign Clients for inter-service communication.
+
+✅ Role-based Access Control across all endpoints.
+
+✅ JWT + Spring Security protection.
+
+✅ Swagger API Docs for each service (with @Operation annotations).
+
+✅ Scheduled Tasks for booking management.
+
+✅ Separation of Concerns: Clean layered architecture.
